@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getServices, addService } from './services/api';
+import ChatWidget from './components/ChatWidget';
 
 function App() {
   const [services, setServices] = useState([]);
@@ -7,7 +8,6 @@ function App() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
 
-  // Fetch services when page loads
   useEffect(() => {
     loadServices();
   }, []);
@@ -85,6 +85,9 @@ function App() {
           </ul>
         )}
       </div>
+
+      <ChatWidget />
+
     </div>
   );
 }
