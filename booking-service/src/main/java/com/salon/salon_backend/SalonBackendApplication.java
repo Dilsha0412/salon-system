@@ -1,9 +1,9 @@
-package com.salon.salon_backend;
+package com.salon;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.salon")
 public class SalonBackendApplication {
 
 	public static void main(String[] args) {
