@@ -30,7 +30,6 @@ def read_root():
 @app.post("/api/chat")
 async def chat_with_agent(request: ChatRequest):
     try:
-        # Run synchronous LangChain call in a worker thread safely
         reply = await asyncio.to_thread(get_ai_response, request.message, request.history)
         return {"reply": reply}
     except Exception as e:
