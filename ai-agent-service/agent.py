@@ -6,22 +6,26 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
-from tools import check_available_services, book_appointment
+from tools import (
+    check_available_services,
+    check_available_stylists,
+    check_available_slots,
+    book_appointment,
+    get_customer_bookings
+)
 
 load_dotenv()
 
-# 1. Initialize Gemini LLM
+# Initialize Gemini LLM
 llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite")
 
-# 2. Embeddings Model
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-# 3. Setup Paths
 current_dir = os.path.dirname(os.path.abspath(__file__))
 knowledge_file_path = os.path.join(current_dir, "salon_knowledge.txt")
 persist_directory = os.path.join(current_dir, "chroma_db")
 
-# 4. Load & Embed Data into Chroma Vector DB
+# Load & Embed Data into Chroma Vector DB
 if os.path.exists(persist_directory) and len(os.listdir(persist_directory)) > 0:
     vectorstore = Chroma(
         persist_directory=persist_directory,
@@ -51,8 +55,14 @@ else:
 
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
-# 5. Bind Tools with LLM
-tools = [check_available_services, book_appointment]
+# Bind All Tools with LLM
+tools = [
+    check_available_services,
+    check_available_stylists,
+    check_available_slots,
+    book_appointment,
+    get_customer_bookings
+]
 tool_map = {t.name: t for t in tools}
 llm_with_tools = llm.bind_tools(tools)
 
@@ -70,11 +80,9 @@ def extract_text_from_content(content):
 
 def get_ai_response(user_message: str, history=None) -> str:
     """Retrieves context, constructs conversation with tools, and executes actions."""
-    # 1. Retrieve knowledge from Chroma
     docs = retriever.invoke(user_message)
     context_text = format_docs(docs)
     
-    # 2. System Instructions
     system_prompt = f"""You are a warm, friendly, and professional AI receptionist for 'Salona Beauty & Hair Studio'.
 
 Your Responsibilities:
@@ -91,7 +99,6 @@ Salon Knowledge Context:
     
     messages = [SystemMessage(content=system_prompt)]
     
-    # 3. Add History Messages
     if history:
         for msg in history[-6:]:
             role = getattr(msg, 'sender', None) or (isinstance(msg, dict) and msg.get('sender'))
@@ -101,13 +108,10 @@ Salon Knowledge Context:
             else:
                 messages.append(AIMessage(content=text))
                 
-    # 4. Add Current User Message
     messages.append(HumanMessage(content=user_message))
     
-    # 5. Invoke LLM with Tool Calling
     response = llm_with_tools.invoke(messages)
     
-    # 6. If LLM requested Tool Calls, execute tools and follow up
     if response.tool_calls:
         messages.append(response)
         
