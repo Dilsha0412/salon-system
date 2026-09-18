@@ -1,11 +1,25 @@
 import axios from 'axios';
+import { getAuthToken } from './authService';
 
-const API_BASE_URL = "http://localhost:8080/api/services";
+const api = axios.create({
+    baseURL: 'http://localhost:8080/api'
+});
 
-// Get all services from backend
+// Attach JWT Token to every outgoing request
+api.interceptors.request.use((config) => {
+    const token = getAuthToken();
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+// Get all services from booking-service
 export const getServices = async () => {
     try {
-        const response = await axios.get(API_BASE_URL);
+        const response = await api.get('/services');
         return response.data;
     } catch (error) {
         console.error("Error fetching services:", error);
@@ -13,13 +27,15 @@ export const getServices = async () => {
     }
 };
 
-// Add a new service to backend
+// Add a new service to booking-service
 export const addService = async (serviceData) => {
     try {
-        const response = await axios.post(API_BASE_URL, serviceData);
+        const response = await api.post('/services', serviceData);
         return response.data;
     } catch (error) {
         console.error("Error adding service:", error);
         throw error;
     }
 };
+
+export default api;
