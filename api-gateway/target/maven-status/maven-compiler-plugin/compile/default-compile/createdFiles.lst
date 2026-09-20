@@ -1,0 +1,3 @@
+com\salon\apigateway\ApiGatewayApplication.class
+com\salon\apigateway\filter\AuthenticationFilter.class
+com\salon\apigateway\filter\AuthenticationFilter$Config.class
