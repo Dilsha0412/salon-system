@@ -1,21 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { sendChatMessage } from '../services/aiAgentService';
+import { MessageSquare, X, Send, Bot } from 'lucide-react';
 
 const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([
-        { text: "Hello! Welcome to Salona Beauty & Hair Studio. How can I help you today?", sender: 'ai' }
+        { text: "Welcome to Salona. How may I assist you with your treatments or appointments today?", sender: 'ai', time: 'Just now' }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
-    // Quick suggestion chips
     const quickSuggestions = [
-        "Haircut Prices ✂️",
-        "Facial Treatments ✨",
-        "Bridal Packages 👰",
-        "Opening Hours 🕒"
+        "Haircut & Styling",
+        "Facial Treatments",
+        "Bridal Packages",
+        "Operating Hours"
     ];
 
     const scrollToBottom = () => {
@@ -33,13 +33,19 @@ const ChatWidget = () => {
         if (!textToSend.trim() || isLoading) return;
 
         const currentHistory = [...messages];
-        setMessages(prev => [...prev, { text: textToSend, sender: 'user' }]);
+        const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        setMessages(prev => [...prev, { text: textToSend, sender: 'user', time: currentTime }]);
         setInput('');
         setIsLoading(true);
 
         const result = await sendChatMessage(textToSend, currentHistory);
 
-        setMessages(prev => [...prev, { text: result.reply, sender: 'ai' }]);
+        setMessages(prev => [...prev, { 
+            text: result.reply, 
+            sender: 'ai', 
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+        }]);
         setIsLoading(false);
     };
 
@@ -49,115 +55,108 @@ const ChatWidget = () => {
     };
 
     return (
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-            {/* 💬 Floating Action Button */}
+        <div style={{ position: 'fixed', bottom: '28px', right: '28px', zIndex: 9999 }}>
+            {/* Floating Black & White Action Button */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
                     style={{
-                        background: 'linear-gradient(135deg, #db2777 0%, #9d174d 100%)',
-                        color: 'white',
-                        border: 'none',
+                        background: '#ffffff',
+                        color: '#000000',
+                        border: '2px solid #ffffff',
                         borderRadius: '50%',
-                        width: '62px',
-                        height: '62px',
+                        width: '60px',
+                        height: '60px',
                         cursor: 'pointer',
-                        boxShadow: '0 8px 24px rgba(219, 39, 119, 0.45)',
+                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '28px',
-                        transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                        transition: 'all 0.25s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                    title="Chat with AI Receptionist"
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.background = '#000000'; e.currentTarget.style.color = '#ffffff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.color = '#000000'; }}
+                    title="Open Salona Assistant"
                 >
-                    💬
+                    <MessageSquare size={24} />
                 </button>
             )}
 
-            {/* 📱 Main Chat Popup Window */}
+            {/* Chat Popup Window */}
             {isOpen && (
                 <div style={{
                     width: '390px',
-                    height: '540px',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '24px',
-                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.22)',
+                    height: '560px',
+                    backgroundColor: '#09090b',
+                    borderRadius: '16px',
+                    boxShadow: '0 25px 60px rgba(0, 0, 0, 0.95)',
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'hidden',
-                    border: '1px solid #f3f4f6',
-                    animation: 'fadeIn 0.25s ease-out'
+                    border: '1px solid #27272a',
+                    animation: 'fadeIn 0.2s ease-out'
                 }}>
                     {/* Header */}
                     <div style={{
-                        background: 'linear-gradient(135deg, #18181b 0%, #09090b 100%)',
-                        color: 'white',
+                        background: '#000000',
+                        color: '#ffffff',
                         padding: '16px 20px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        borderBottom: '3px solid #db2777'
+                        borderBottom: '1px solid #27272a'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                background: 'linear-gradient(135deg, #db2777, #f43f5e)',
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '8px',
+                                background: '#ffffff',
+                                color: '#000000',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '20px',
-                                boxShadow: '0 2px 8px rgba(219, 39, 119, 0.4)'
+                                justifyContent: 'center'
                             }}>
-                                💇‍♀️
+                                <Bot size={20} />
                             </div>
                             <div>
-                                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', letterSpacing: '0.3px' }}>
-                                    Salona AI Assistant
+                                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                                    Salona Assistant
                                 </h4>
-                                <span style={{ fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <span style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%', display: 'inline-block' }}></span>
-                                    Online • 24/7 Support
+                                <span style={{ fontSize: '11px', color: '#a1a1aa', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ width: '6px', height: '6px', backgroundColor: '#ffffff', borderRadius: '50%', display: 'inline-block' }}></span>
+                                    ONLINE • 24/7 CONCIERGE
                                 </span>
                             </div>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
                             style={{
-                                background: '#27272a',
-                                border: 'none',
-                                color: '#a1a1aa',
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                fontSize: '14px',
+                                background: '#18181b',
+                                border: '1px solid #27272a',
+                                color: '#ffffff',
+                                width: '30px',
+                                height: '30px',
+                                borderRadius: '6px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'all 0.2s'
+                                justifyContent: 'center'
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.background = '#3f3f46'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.color = '#a1a1aa'; e.currentTarget.style.background = '#27272a'; }}
-                            title="Close Chat"
                         >
-                            ✕
+                            <X size={15} />
                         </button>
                     </div>
 
                     {/* Messages Body */}
                     <div style={{
                         flex: 1,
-                        padding: '16px',
+                        padding: '18px 16px',
                         overflowY: 'auto',
-                        backgroundColor: '#f8fafc',
+                        backgroundColor: '#050507',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '12px'
+                        gap: '14px'
                     }}>
                         {messages.map((msg, index) => {
                             const isUser = msg.sender === 'user';
@@ -166,49 +165,61 @@ const ChatWidget = () => {
                                     key={index}
                                     style={{
                                         alignSelf: isUser ? 'flex-end' : 'flex-start',
-                                        maxWidth: '82%',
-                                        backgroundColor: isUser ? '#db2777' : '#ffffff',
-                                        color: isUser ? '#ffffff' : '#1e293b',
-                                        padding: '12px 16px',
-                                        borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                                        boxShadow: isUser
-                                            ? '0 4px 12px rgba(219, 39, 119, 0.25)'
-                                            : '0 2px 8px rgba(0, 0, 0, 0.05)',
-                                        fontSize: '14px',
-                                        lineHeight: '1.5',
-                                        whiteSpace: 'pre-line'
+                                        maxWidth: '85%',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: isUser ? 'flex-end' : 'flex-start'
                                     }}
                                 >
-                                    {msg.text}
+                                    <div
+                                        style={{
+                                            backgroundColor: isUser ? '#ffffff' : '#18181b',
+                                            color: isUser ? '#000000' : '#f4f4f5',
+                                            padding: '12px 16px',
+                                            borderRadius: isUser ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                                            border: isUser ? 'none' : '1px solid #27272a',
+                                            fontSize: '13.5px',
+                                            lineHeight: '1.5',
+                                            fontWeight: isUser ? '500' : '400',
+                                            whiteSpace: 'pre-line'
+                                        }}
+                                    >
+                                        {msg.text}
+                                    </div>
+                                    {msg.time && (
+                                        <span style={{ fontSize: '10.5px', color: '#52525b', marginTop: '4px', padding: '0 4px' }}>
+                                            {msg.time}
+                                        </span>
+                                    )}
                                 </div>
                             );
                         })}
 
-                        {/* Typing Animation */}
+                        {/* Loading Indicator */}
                         {isLoading && (
                             <div style={{
                                 alignSelf: 'flex-start',
-                                backgroundColor: '#ffffff',
-                                color: '#64748b',
+                                backgroundColor: '#18181b',
+                                color: '#a1a1aa',
                                 padding: '10px 16px',
-                                borderRadius: '18px 18px 18px 4px',
-                                fontSize: '13px',
+                                borderRadius: '14px 14px 14px 2px',
+                                fontSize: '12.5px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                boxShadow: '0 2px 6px rgba(0,0,0,0.05)'
+                                border: '1px solid #27272a'
                             }}>
-                                <span>✨</span> Salona AI is typing...
+                                <span>Assistant is typing...</span>
                             </div>
                         )}
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Quick Suggestion Chips */}
+                    {/* Quick Chips */}
                     <div style={{
-                        padding: '8px 14px',
-                        backgroundColor: '#ffffff',
-                        borderTop: '1px solid #f1f5f9',
+                        padding: '10px 14px',
+                        backgroundColor: '#09090b',
+                        borderTop: '1px solid #18181b',
                         display: 'flex',
                         gap: '6px',
                         overflowX: 'auto',
@@ -220,18 +231,18 @@ const ChatWidget = () => {
                                 onClick={() => handleSend(chip)}
                                 disabled={isLoading}
                                 style={{
-                                    backgroundColor: '#fdf2f8',
-                                    color: '#be185d',
-                                    border: '1px solid #fbcfe8',
-                                    borderRadius: '16px',
-                                    padding: '5px 10px',
-                                    fontSize: '12px',
-                                    fontWeight: '500',
+                                    backgroundColor: '#18181b',
+                                    color: '#ffffff',
+                                    border: '1px solid #27272a',
+                                    borderRadius: '6px',
+                                    padding: '6px 12px',
+                                    fontSize: '11.5px',
+                                    fontWeight: '600',
                                     cursor: isLoading ? 'not-allowed' : 'pointer',
                                     transition: 'all 0.15s'
                                 }}
-                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fce7f3'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fdf2f8'; }}
+                                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#ffffff'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#27272a'; }}
                             >
                                 {chip}
                             </button>
@@ -240,9 +251,9 @@ const ChatWidget = () => {
 
                     {/* Input Bar */}
                     <form onSubmit={handleFormSubmit} style={{
-                        padding: '12px 16px',
-                        backgroundColor: '#ffffff',
-                        borderTop: '1px solid #e2e8f0',
+                        padding: '14px 16px',
+                        backgroundColor: '#000000',
+                        borderTop: '1px solid #27272a',
                         display: 'flex',
                         gap: '8px'
                     }}>
@@ -250,36 +261,34 @@ const ChatWidget = () => {
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask about prices, timings, bridal..."
+                            placeholder="Type an inquiry..."
                             disabled={isLoading}
+                            className="glass-input"
                             style={{
-                                flex: 1,
                                 padding: '10px 14px',
-                                borderRadius: '12px',
-                                border: '1px solid #cbd5e1',
-                                outline: 'none',
-                                fontSize: '14px',
-                                transition: 'border-color 0.2s'
+                                fontSize: '13px',
+                                borderRadius: '8px'
                             }}
-                            onFocus={(e) => e.target.style.borderColor = '#db2777'}
-                            onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
                         />
                         <button
                             type="submit"
                             disabled={isLoading || !input.trim()}
                             style={{
-                                backgroundColor: isLoading || !input.trim() ? '#f472b6' : '#db2777',
-                                color: 'white',
+                                background: isLoading || !input.trim() ? '#27272a' : '#ffffff',
+                                color: isLoading || !input.trim() ? '#71717a' : '#000000',
                                 border: 'none',
-                                borderRadius: '12px',
-                                padding: '10px 18px',
-                                fontWeight: '600',
-                                fontSize: '14px',
+                                borderRadius: '8px',
+                                width: '40px',
+                                height: '40px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-                                transition: 'background-color 0.2s'
+                                transition: 'all 0.2s',
+                                flexShrink: 0
                             }}
                         >
-                            Send
+                            <Send size={16} />
                         </button>
                     </form>
                 </div>
