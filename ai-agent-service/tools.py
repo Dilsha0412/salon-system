@@ -1,7 +1,8 @@
+import os
 import requests
 from langchain_core.tools import tool
 
-BOOKING_SERVICE_URL = "http://localhost:8080/api"
+BOOKING_SERVICE_URL = os.getenv("BOOKING_SERVICE_URL", "http://booking-service:8080/api")
 
 @tool
 def check_available_services():
