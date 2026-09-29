@@ -1,0 +1,135 @@
+services:
+  # PostgreSQL Database
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: salon-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Cricket0412
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - salon-network
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: salon-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - salon-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service/auth
+      dockerfile: Dockerfile
+    container_name: salon-auth-service
+    restart: always
+    depends_on:
+      - postgres-db
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Cricket0412
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    ports:
+      - "8081:8081"
+    networks:
+      - salon-network
+
+  # Booking Service
+  booking-service:
+    build:
+      context: ./booking-service
+      dockerfile: Dockerfile
+    container_name: salon-booking-service
+    restart: always
+    depends_on:
+      - postgres-db
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/salon_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Cricket0412
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    ports:
+      - "8083:8080"
+    networks:
+      - salon-network
+
+  # AI Agent Service
+  ai-agent-service:
+    build:
+      context: ./ai-agent-service
+      dockerfile: Dockerfile
+    container_name: salon-ai-service
+    restart: always
+    depends_on:
+      - booking-service
+    env_file:
+      - ./ai-agent-service/.env
+    environment:
+      BOOKING_SERVICE_URL: http://booking-service:8080/api
+    ports:
+      - "8000:8000"
+    networks:
+      - salon-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: salon-api-gateway
+    restart: always
+    depends_on:
+      - auth-service
+      - booking-service
+      - ai-agent-service
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8081
+      BOOKING_SERVICE_URL: http://booking-service:8080
+      AI_SERVICE_URL: http://ai-agent-service:8000
+    ports:
+      - "8082:8082"
+    networks:
+      - salon-network
+
+  # Frontend React
+  frontend-react:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile
+    container_name: salon-frontend
+    restart: always
+    depends_on:
+      - api-gateway
+    ports:
+      - "3000:80"
+    networks:
+      - salon-network
+
+networks:
+  salon-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
