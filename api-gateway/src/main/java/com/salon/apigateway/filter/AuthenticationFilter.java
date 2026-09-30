@@ -68,7 +68,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
     private void validateToken(String token) {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        byte[] keyBytes = jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
         Key key = Keys.hmacShaKeyFor(keyBytes);
         Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
     }
