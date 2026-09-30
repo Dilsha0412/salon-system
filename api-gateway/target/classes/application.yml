@@ -36,7 +36,7 @@ spring:
         - id: booking-service
           uri: http://localhost:8080
           predicates:
-            - Path=/api/bookings/**, /api/services/**, /api/customers/**, /api/appointments/**
+            - Path=/api/bookings/**, /api/services/**, /api/stylists/**, /api/customers/**, /api/appointments/**
 
         # AI Agent Service Route
         - id: ai-agent-service
