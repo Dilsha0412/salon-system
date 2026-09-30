@@ -16,6 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.salon.auth.dto.UserRegisteredEvent;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -25,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -43,6 +47,26 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        // Publish UserRegisteredEvent to RabbitMQ
+        try {
+            UserRegisteredEvent event = UserRegisteredEvent.builder()
+                    .userId(savedUser.getId())
+                    .fullName(savedUser.getFullName())
+                    .email(savedUser.getEmail())
+                    .phone(savedUser.getPhone())
+                    .role(savedUser.getRole().name())
+                    .timestamp(java.time.LocalDateTime.now().toString())
+                    .build();
+            rabbitTemplate.convertAndSend(
+                    com.salon.auth.config.RabbitMQConfig.EXCHANGE_NAME,
+                    com.salon.auth.config.RabbitMQConfig.USER_REGISTERED_ROUTING_KEY,
+                    event
+            );
+        } catch (Exception e) {
+            // Log warning but don't fail registration if message broker is temporarily unreachable
+            System.err.println("Could not publish UserRegisteredEvent to RabbitMQ: " + e.getMessage());
+        }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
         String token = jwtUtils.generateToken(userDetails, savedUser.getRole().name(), savedUser.getId());
