@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getAuthToken } from './authService';
 
 const GATEWAY_BASE = 'http://localhost:8082/api';
-const DIRECT_BOOKING_BASE = 'http://localhost:8080/api';
+const DIRECT_BOOKING_BASE = 'http://localhost:8083/api';
 
 // Create API instance
 const api = axios.create({
