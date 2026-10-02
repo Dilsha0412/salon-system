@@ -4,7 +4,7 @@ const GATEWAY_URL = 'http://localhost:8082';
 const DIRECT_AI_URL = 'http://127.0.0.1:8000';
 
 export const sendChatMessage = async (userMessage, history = []) => {
-    // 1. Try sending request via API Gateway
+    // Try sending request via API Gateway
     try {
         const response = await axios.post(`${GATEWAY_URL}/api/chat`, {
             message: userMessage,
@@ -20,7 +20,7 @@ export const sendChatMessage = async (userMessage, history = []) => {
     } catch (gatewayError) {
         console.warn("Gateway request failed, attempting direct AI agent service fallback...", gatewayError);
 
-        // 2. Resilient fallback: Try direct AI Agent service port 8000
+        // Try direct AI Agent service port 8000
         try {
             const directResponse = await axios.post(`${DIRECT_AI_URL}/api/chat`, {
                 message: userMessage,

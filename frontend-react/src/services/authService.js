@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Unified API Gateway Auth URL
-const AUTH_API_URL = 'http://localhost:8082/api/auth';
+// Unified API Gateway Auth URL with direct fallback
+const GATEWAY_AUTH_URL = 'http://localhost:8082/api/auth';
+const DIRECT_AUTH_URL = 'http://localhost:8081/api/auth';
 
 // Helper to extract clean error messages
 const extractError = (err) => {
@@ -10,8 +11,8 @@ const extractError = (err) => {
         if (err.response.data.error) return err.response.data.error;
         if (err.response.data.message) return err.response.data.message;
     }
-    if (err.message && err.message.includes('Network Error')) {
-        return "Network connection error. Please ensure API Gateway (Port 8082) is running.";
+    if (err.message && (err.message.includes('Network Error') || err.code === 'ERR_NETWORK')) {
+        return "Network connection error. Please ensure API Gateway or Auth Service is running.";
     }
     return err.message || "An unexpected error occurred.";
 };
@@ -19,28 +20,48 @@ const extractError = (err) => {
 // User Register Request
 export const registerUser = async (userData) => {
     try {
-        const response = await axios.post(`${AUTH_API_URL}/register`, userData);
+        const response = await axios.post(`${GATEWAY_AUTH_URL}/register`, userData, { timeout: 8000 });
         if (response.data && response.data.token) {
             localStorage.setItem('user', JSON.stringify(response.data));
             localStorage.setItem('token', response.data.token);
         }
         return response.data;
-    } catch (error) {
-        throw new Error(extractError(error));
+    } catch (gwError) {
+        console.warn("Gateway register failed, attempting direct auth fallback...", gwError);
+        try {
+            const fbResponse = await axios.post(`${DIRECT_AUTH_URL}/register`, userData, { timeout: 8000 });
+            if (fbResponse.data && fbResponse.data.token) {
+                localStorage.setItem('user', JSON.stringify(fbResponse.data));
+                localStorage.setItem('token', fbResponse.data.token);
+            }
+            return fbResponse.data;
+        } catch (directError) {
+            throw new Error(extractError(directError));
+        }
     }
 };
 
 // User Login Request
 export const loginUser = async (credentials) => {
     try {
-        const response = await axios.post(`${AUTH_API_URL}/login`, credentials);
+        const response = await axios.post(`${GATEWAY_AUTH_URL}/login`, credentials, { timeout: 8000 });
         if (response.data && response.data.token) {
             localStorage.setItem('user', JSON.stringify(response.data));
             localStorage.setItem('token', response.data.token);
         }
         return response.data;
-    } catch (error) {
-        throw new Error(extractError(error));
+    } catch (gwError) {
+        console.warn("Gateway login failed, attempting direct auth fallback...", gwError);
+        try {
+            const fbResponse = await axios.post(`${DIRECT_AUTH_URL}/login`, credentials, { timeout: 8000 });
+            if (fbResponse.data && fbResponse.data.token) {
+                localStorage.setItem('user', JSON.stringify(fbResponse.data));
+                localStorage.setItem('token', fbResponse.data.token);
+            }
+            return fbResponse.data;
+        } catch (directError) {
+            throw new Error(extractError(directError));
+        }
     }
 };
 
