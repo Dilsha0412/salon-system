@@ -6,7 +6,7 @@ const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([
-        { text: "Welcome to Salona. How may I assist you with your treatments or appointments today?", sender: 'ai', time: 'Just now' }
+        { text: "Welcome to Luméra. How may I assist you with your treatments or appointments today?", sender: 'ai', time: 'Just now' }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
@@ -76,7 +76,7 @@ const ChatWidget = () => {
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.background = '#000000'; e.currentTarget.style.color = '#ffffff'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.color = '#000000'; }}
-                    title="Open Salona Assistant"
+                    title="Open Luméra Assistant"
                 >
                     <MessageSquare size={24} />
                 </button>
@@ -121,7 +121,7 @@ const ChatWidget = () => {
                             </div>
                             <div>
                                 <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                                    Salona Assistant
+                                    Luméra Assistant
                                 </h4>
                                 <span style={{ fontSize: '11px', color: '#a1a1aa', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     <span style={{ width: '6px', height: '6px', backgroundColor: '#ffffff', borderRadius: '50%', display: 'inline-block' }}></span>
