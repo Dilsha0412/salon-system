@@ -30,13 +30,13 @@ spring:
         - id: auth-service
           uri: ${AUTH_SERVICE_URL:http://localhost:8081}
           predicates:
-            - Path=/api/auth/**
+            - Path=/api/auth, /api/auth/**
 
         # Booking Services Route
         - id: booking-service
           uri: ${BOOKING_SERVICE_URL:http://localhost:8080}
           predicates:
-            - Path=/api/bookings/**, /api/services/**, /api/stylists/**, /api/customers/**, /api/appointments/**
+            - Path=/api/bookings, /api/bookings/**, /api/services, /api/services/**, /api/stylists, /api/stylists/**, /api/customers, /api/customers/**, /api/appointments, /api/appointments/**
 
         # AI Agent Service Route
         - id: ai-agent-service
