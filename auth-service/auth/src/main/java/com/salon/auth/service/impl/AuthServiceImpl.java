@@ -64,7 +64,6 @@ public class AuthServiceImpl implements AuthService {
                     event
             );
         } catch (Exception e) {
-            // Log warning but don't fail registration if message broker is temporarily unreachable
             System.err.println("Could not publish UserRegisteredEvent to RabbitMQ: " + e.getMessage());
         }
 
