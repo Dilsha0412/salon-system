@@ -53,7 +53,7 @@ const fetchWithFallback = async (requestFn, fallbackPath, method = 'GET', data =
     }
 };
 
-// ================= SERVICES =================
+//  SERVICES 
 
 export const getServices = async () => {
     return await fetchWithFallback(
@@ -100,7 +100,7 @@ export const deleteService = async (id) => {
     );
 };
 
-// ================= STYLISTS =================
+//  STYLISTS 
 
 export const getStylists = async () => {
     return await fetchWithFallback(
@@ -147,7 +147,7 @@ export const deleteStylist = async (id) => {
     );
 };
 
-// ================= BOOKINGS / APPOINTMENTS =================
+//  BOOKINGS / APPOINTMENTS 
 
 export const getAllBookings = async () => {
     return await fetchWithFallback(
