@@ -27,7 +27,7 @@ public class BookingController {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    // Standard Salon Business Time Slots (Daily: 9 AM to 8 PM)
+    // Standard Salon Business Time Slots
     private static final List<String> ALL_DAILY_SLOTS = Arrays.asList(
             "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
             "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM",
@@ -53,37 +53,52 @@ public class BookingController {
         }
     }
 
-    // 1. GET /api/bookings - Get all bookings
+    // Get all bookings
     @GetMapping
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
 
-    // 2. GET /api/bookings/{id} - Get single booking details
+    // Get single booking details
     @GetMapping("/{id}")
     public ResponseEntity<Booking> getBookingById(@PathVariable Long id) {
         Optional<Booking> booking = bookingRepository.findById(id);
         return booking.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // 3. POST /api/bookings - Create new appointment booking
+    // Create new appointment booking
     @PostMapping
-    public Booking createBooking(@RequestBody Booking booking) {
+    public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
         if (booking.getStatus() == null || booking.getStatus().isEmpty()) {
             booking.setStatus("CONFIRMED");
         }
+
+        // Deduplication Guard: Check if an identical active booking was already registered
+        if (booking.getCustomerPhone() != null && booking.getAppointmentDate() != null && booking.getAppointmentTime() != null) {
+            List<Booking> customerBookings = bookingRepository.findByCustomerPhoneOrderByCreatedAtDesc(booking.getCustomerPhone());
+            Optional<Booking> duplicate = customerBookings.stream()
+                    .filter(b -> booking.getAppointmentDate().equals(b.getAppointmentDate())
+                            && booking.getAppointmentTime().equalsIgnoreCase(b.getAppointmentTime())
+                            && !"CANCELLED".equalsIgnoreCase(b.getStatus()))
+                    .findFirst();
+
+            if (duplicate.isPresent()) {
+                return ResponseEntity.ok(duplicate.get());
+            }
+        }
+
         Booking savedBooking = bookingRepository.save(booking);
         publishBookingEvent(savedBooking, "CREATED", RabbitMQConfig.BOOKING_CREATED_ROUTING_KEY);
-        return savedBooking;
+        return ResponseEntity.ok(savedBooking);
     }
 
-    // 4. GET /api/bookings/customer/{phone} - Customer's personal booking history
+    // Customer's personal booking history
     @GetMapping("/customer/{phone}")
     public List<Booking> getCustomerBookingHistory(@PathVariable String phone) {
         return bookingRepository.findByCustomerPhoneOrderByCreatedAtDesc(phone);
     }
 
-    // 5. GET /api/bookings/available-slots - Calculate and return free time slots
+    // Calculate and return free time slots
     @GetMapping("/available-slots")
     public List<String> getAvailableSlots(
             @RequestParam String date,
@@ -107,7 +122,7 @@ public class BookingController {
                 .collect(Collectors.toList());
     }
 
-    // 6. PUT /api/bookings/{id}/status - Update booking status (CONFIRMED, COMPLETED, CANCELLED)
+    // Update booking status (CONFIRMED, COMPLETED, CANCELLED)
     @PutMapping("/{id}/status")
     public ResponseEntity<Booking> updateBookingStatus(
             @PathVariable Long id,
@@ -121,7 +136,7 @@ public class BookingController {
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // 7. DELETE /api/bookings/{id} - Cancel appointment
+    // Cancel appointment
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelBooking(@PathVariable Long id) {
         return bookingRepository.findById(id).map(booking -> {
