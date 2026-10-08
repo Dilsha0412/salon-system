@@ -17,11 +17,10 @@ public class Booking {
 
     private String customerName;
     private String serviceName;
-    private String appointmentDate; // e.g. "2026-09-15"
-    private String appointmentTime; // e.g. "10:00 AM"
+    private String appointmentDate;
+    private String appointmentTime;
     private String customerPhone;
-    private String status = "CONFIRMED"; // CONFIRMED, COMPLETED, CANCELLED
-
+    private String status = "CONFIRMED";
     private Long stylistId;
     private String stylistName;
     private String notes;
