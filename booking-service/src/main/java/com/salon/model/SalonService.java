@@ -17,7 +17,22 @@ public class SalonService {
     private String name;
     private String description;
     private Double price;
+    private String category = "Hair Care";
+    private Integer durationMinutes = 45;
+    private Double rating = 4.8;
+    private Integer reviewCount = 24;
+
     public SalonService() {}
+
+    public SalonService(String name, String description, Double price, String category, Integer durationMinutes, Double rating, Integer reviewCount) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.category = (category != null && !category.isEmpty()) ? category : "Hair Care";
+        this.durationMinutes = durationMinutes != null ? durationMinutes : 45;
+        this.rating = rating != null ? rating : 4.8;
+        this.reviewCount = reviewCount != null ? reviewCount : 24;
+    }
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -31,4 +46,16 @@ public class SalonService {
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public Integer getDurationMinutes() { return durationMinutes; }
+    public void setDurationMinutes(Integer durationMinutes) { this.durationMinutes = durationMinutes; }
+
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
+
+    public Integer getReviewCount() { return reviewCount; }
+    public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
 }

@@ -15,9 +15,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Find bookings by date
     List<Booking> findByAppointmentDate(String appointmentDate);
 
-    // Find active (non-cancelled) bookings by date and stylist
+    // Find active bookings by date and stylist
     List<Booking> findByAppointmentDateAndStylistIdAndStatusNot(String appointmentDate, Long stylistId, String status);
 
-    // Find active (non-cancelled) bookings by date
+    // Find active bookings by date
     List<Booking> findByAppointmentDateAndStatusNot(String appointmentDate, String status);
 }
