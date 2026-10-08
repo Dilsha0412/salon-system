@@ -19,6 +19,6 @@ public class BookingEvent implements Serializable {
     private String appointmentDate;
     private String appointmentTime;
     private String status;
-    private String eventType; // CREATED, UPDATED, CANCELLED
+    private String eventType;
     private String timestamp;
 }
